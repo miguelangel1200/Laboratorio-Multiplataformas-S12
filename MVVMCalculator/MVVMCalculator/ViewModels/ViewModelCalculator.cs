@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows.Input;
 using Xamarin.Forms;
 
@@ -10,7 +8,20 @@ namespace MVVMCalculator.ViewModels
     {
         #region Propiedades
         int currentState = 1;
+
         string mathOperator;
+        public string MathOperator
+        {
+            get { return mathOperator; }
+            set
+            {
+                if (mathOperator != value)
+                {
+                    mathOperator = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         double firstNumber;
         public double FirstNumber
@@ -58,8 +69,9 @@ namespace MVVMCalculator.ViewModels
         #endregion
         public ICommand OnSelectNumber { protected set; get; }
         public ICommand OnClear { protected set; get; }
+        public ICommand OnSelectOperator { protected set; get; }
+        public ICommand OnCalculate { protected set; get; }
 
-        
 
         public ViewModelCalculator()
         {
@@ -69,7 +81,33 @@ namespace MVVMCalculator.ViewModels
                 secondNumber = 0;
                 currentState = 1;
                 this.Result = "0";
+                this.MathOperator = "";
             });
+
+            OnCalculate = new Command(() =>
+            {
+                if (currentState == 2)
+                {
+                    var result = SimpleCalculator.Calculate(firstNumber, secondNumber, mathOperator);
+
+                    Result = result.ToString();
+                    firstNumber = result;
+                    currentState = -1;
+                }
+            });
+
+
+            OnSelectOperator = new Command<string>(
+            
+                execute: (String parameter) =>
+                {
+                    currentState = -2;
+                    string pressed = parameter;
+                    MathOperator = pressed;
+                }
+                
+            );
+
 
             OnSelectNumber = new Command<string>(
                execute: (string parameter) =>
@@ -100,6 +138,9 @@ namespace MVVMCalculator.ViewModels
 					   }
 				   }
 			   });
+
+                
+
 
         }
 
